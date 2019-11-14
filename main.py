@@ -23,10 +23,7 @@ class Dataset:
         
         self.train_text = self.text.iloc[rest_idx]
         self.train_label = self.label.iloc[rest_idx]
-        
-        
-        print(len(self.train_label), len(self.train_text))
-        print(len(self.test_label), len(self.test_text))
+    
         
         self.dictionary = {}
         self.hafez_dict = {}
@@ -40,7 +37,7 @@ class Dataset:
     def extract_words(self):
         self.hafez_dict = {}
         self.saadi_dict = {}
-        for d, l in zip(self.text, self.label):
+        for d, l in zip(self.train_text, self.train_label):
             words = d.split(" ")
             if l == "hafez":
                 for w in words:
@@ -97,21 +94,20 @@ class Predictor:
             tmp = self.p_hafez
             try:
                 tmp *= hafez_dict[w]
+                hafez_prob += tmp
             except KeyError:
-                # print("Not in saadi database")
-                # pass
                 tmp *= 0
-            hafez_prob += tmp
+            
         
         ## Calculate P(Saadi|words)
         for w in words:
             tmp = self.p_saadi
             try:
                 tmp *= saadi_dict[w]
+                saadi_prob += tmp
             except KeyError:
-                # pass
                 tmp *= 0
-            saadi_prob += tmp
+            
         
         if saadi_prob > hafez_prob:
             return "saadi"
@@ -131,8 +127,8 @@ if __name__ == '__main__':
     pred = Predictor(dataset)
     pred.priorKnowledge()
 
-    a = list(map(pred.predict, dataset.text))
-    print((a == dataset.label).mean())
+    a = list(map(pred.predict, dataset.test_text))
+    print('Accuracy:', (a == dataset.test_label).mean())
     
 
 
